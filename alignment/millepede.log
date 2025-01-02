@@ -1,0 +1,14 @@
+ ($Id: d281f2231ebd7fabc50925038cb0bd05e9f5bff2 $)
+  
+ Log-file Millepede II-P                        Thu Jan  2 10:42:43 2025
+                                                                        
+  
+ Text and data files:
+  1  C_binary         output.bin
+  2  text             mp2con.txt
+  
+ LOOP1: starting
+ LOOP1:           3  labels from txt data stored
+ LOOP1: reading data files
+ LOOP1:           4  is total number NTGB of labels/parameters
+ LOOP1:           2  is number of pre-sigmas

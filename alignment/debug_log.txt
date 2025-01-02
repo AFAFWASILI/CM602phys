@@ -1,0 +1,16 @@
+ ($Id: d281f2231ebd7fabc50925038cb0bd05e9f5bff2 $)
+ using OpenMP (TM)
+ compiled with gcc 11.4.0
+  
+   <  Millepede II-P starting ... Thu Jan  2 10:41:53 2025
+                                                          
+  
+  
+ ________________________________FILETC/X__________________________________
+  
+  
+ Command line options: 
+ --------------------- 
+  1  pedeSteer.txt
+ Open error for file:pedeSteer.txt - stop
+ PWD:/home/afafwasili/nominalFEPIC/alignment

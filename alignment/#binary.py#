@@ -1,0 +1,122 @@
+import struct
+
+def write_mille_binary(filename, records):
+    """
+    Write a minimal Millepede binary file with a single record.
+    
+    Args:
+        filename (str): The name of the binary file to write.
+        records (list): List of dictionaries representing records to write.
+    """
+    with open(filename, "wb") as f:
+        for record in records:
+            # Extract record components
+            residual = record["residual"]
+            uncertainty = record["uncertainty"]
+            local_derivatives = record["local_derivatives"]
+            global_labels = record["global_labels"]
+            global_derivatives = record["global_derivatives"]
+
+            # Calculate the number of entries and record length
+            nr = len(local_derivatives) + len(global_labels)
+            record_length = 4 * (nr + 2)  # 4 bytes per entry
+            
+            # Fortran binary format requires length at the start and end of the record
+            f.write(struct.pack("i", record_length))  # Record length prefix
+            f.write(struct.pack("f", residual))       # Residual
+            f.write(struct.pack("f", uncertainty))    # Uncertainty
+            for ld in local_derivatives:
+                f.write(struct.pack("f", ld))         # Local derivatives
+            for label, gd in zip(global_labels, global_derivatives):
+                f.write(struct.pack("i", label))      # Global labels
+                f.write(struct.pack("f", gd))         # Global derivatives
+            f.write(struct.pack("i", record_length))  # Record length suffix
+
+# Minimal example record
+records = [
+    {
+        "residual": -0.00794364139438,
+        "uncertainty": 0.00200000009499,
+        "local_derivatives": [1.0],
+        "global_labels": [73],
+        "global_derivatives": [1.0]
+    }
+]
+
+# Write the binary file
+write_mille_binary("mp2tst.bin", records)
+print("Binary file 'mp2tst.bin' written successfully.")
+import struct
+
+def write_fortran_binary(filename, records):
+    """
+    Writes a Fortran-style binary file for Millepede II.
+
+    Parameters:
+        filename (str): Output binary file name.
+        records (list of dict): List of records with keys:
+            - "residual" (float)
+            - "uncertainty" (float)
+            - "local_derivatives" (list of float)
+            - "global_labels" (list of int)
+            - "global_derivatives" (list of float)
+    """
+    with open(filename, "wb") as f:
+        for record_idx, record in enumerate(records):
+            # Data fields
+            residual = record["residual"]
+            uncertainty = record["uncertainty"]
+            local_derivatives = record["local_derivatives"]
+            global_labels = record["global_labels"]
+            global_derivatives = record["global_derivatives"]
+
+            # Calculate the number of elements in the record
+            num_local = len(local_derivatives)
+            num_global = len(global_labels)
+
+            # Calculate total record length
+            record_length = 4 * (2 + num_local + 2 * num_global)  # (residual + uncertainty) + local + (labels + derivatives)
+
+            # Debugging output
+            print(f"Writing Record {record_idx + 1}:")
+            print(f"  Record Length: {record_length} bytes")
+            print(f"  Residual: {residual}, Uncertainty: {uncertainty}")
+            print(f"  Local Derivatives: {local_derivatives}")
+            print(f"  Global Labels: {global_labels}")
+            print(f"  Global Derivatives: {global_derivatives}")
+
+            # Write record length (header)
+            f.write(struct.pack("i", record_length))
+
+            # Write record data
+            f.write(struct.pack("f", residual))
+            f.write(struct.pack("f", uncertainty))
+            for local in local_derivatives:
+                f.write(struct.pack("f", local))
+            for label, derivative in zip(global_labels, global_derivatives):
+                f.write(struct.pack("i", label))
+                f.write(struct.pack("f", derivative))
+
+            # Write record length (footer)
+            f.write(struct.pack("i", record_length))
+
+
+# Example usage
+records = [
+    {
+        "residual": -0.00794364139438,
+        "uncertainty": 0.00200000009499,
+        "local_derivatives": [1.0],
+        "global_labels": [73],
+        "global_derivatives": [1.0]
+    },
+    {
+        "residual": 0.0199138838798,
+        "uncertainty": 0.00200000009499,
+        "local_derivatives": [1.0],
+        "global_labels": [123],
+        "global_derivatives": [1.0]
+    }
+]
+
+write_fortran_binary("mp2tst_corrected.bin", records)

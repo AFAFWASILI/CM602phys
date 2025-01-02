@@ -1,0 +1,281 @@
+#include <fstream>
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+// Define the structure to hold measurement data
+struct Measurement {
+    int measureNumber;
+    int param1;
+    int param2;
+    int param3;
+    float param4;
+    float param5;
+    std::vector<int> localIndices;
+    std::vector<float> localValues;
+    std::vector<int> globalIndices;
+    std::vector<float> globalValues;
+};
+
+// Function to parse the text data and populate the measurements
+std::vector<Measurement> parseTextData(const std::string& textData) {
+    std::vector<Measurement> measurements;
+    std::istringstream iss(textData);
+    std::string line;
+    Measurement measurement;
+    int currentNR = 0;
+
+    while (std::getline(iss, line)) {
+        if (line.find("=== NR") != std::string::npos) {
+            if (!measurement.localIndices.empty() || 
+                !measurement.globalIndices.empty() || 
+                !measurement.localValues.empty() || 
+                !measurement.globalValues.empty()) {
+                measurements.push_back(measurement);
+                measurement = Measurement();
+            }
+            currentNR++;
+            continue;
+        }
+
+        if (line.find("-g- meas.") != std::string::npos) {
+            if (!measurement.localIndices.empty() || 
+                !measurement.globalIndices.empty() || 
+                !measurement.localValues.empty() || 
+                !measurement.globalValues.empty()) {
+                measurements.push_back(measurement);
+                measurement = Measurement();
+            }
+            measurement.measureNumber = currentNR;
+            std::istringstream issLine(line);
+            std::string token;
+            issLine >> token >> token >> measurement.param1 >> measurement.param2 >> measurement.param3 >> measurement.param4 >> measurement.param5;
+        } else if (line.find("local   [") != std::string::npos) {
+            line = line.substr(line.find('[') + 1);
+            line = line.substr(0, line.find(']'));
+            std::istringstream issLine(line);
+            int localIndex;
+            float localValue;
+            while (issLine >> localIndex) {
+                measurement.localIndices.push_back(localIndex);
+            }
+            while (issLine >> localValue) {
+                measurement.localValues.push_back(localValue);
+            }
+        } else if (line.find("global  [") != std::string::npos) {
+            line = line.substr(line.find('[') + 1);
+            line = line.substr(0, line.find(']'));
+            std::istringstream issLine(line);
+            int globalIndex;
+            float globalValue;
+            while (issLine >> globalIndex) {
+                measurement.globalIndices.push_back(globalIndex);
+            }
+            while (issLine >> globalValue) {
+                measurement.globalValues.push_back(globalValue);
+            }
+        }
+    }
+    if (!measurement.localIndices.empty() || 
+        !measurement.globalIndices.empty() || 
+        !measurement.localValues.empty() || 
+        !measurement.globalValues.empty()) {
+        measurements.push_back(measurement);
+    }
+    return measurements;
+}
+
+// Function to write binary data to a file
+void writeBinaryData(const std::string& filename, const std::vector<Measurement>& data) {
+    std::ofstream outFile(filename, std::ios::binary);
+    if (!outFile) {
+        std::cerr << "Error opening file for writing: " << filename << std::endl;
+        return;
+    }
+
+    for (const auto& record : data) {
+        outFile.write(reinterpret_cast<const char*>(&record.measureNumber), sizeof(record.measureNumber));
+        outFile.write(reinterpret_cast<const char*>(&record.param1), sizeof(record.param1));
+        outFile.write(reinterpret_cast<const char*>(&record.param2), sizeof(record.param2));
+        outFile.write(reinterpret_cast<const char*>(&record.param3), sizeof(record.param3));
+        outFile.write(reinterpret_cast<const char*>(&record.param4), sizeof(record.param4));
+        outFile.write(reinterpret_cast<const char*>(&record.param5), sizeof(record.param5));
+
+        int localSize = record.localIndices.size();
+        outFile.write(reinterpret_cast<const char*>(&localSize), sizeof(localSize));
+        for (int i = 0; i < localSize; ++i) {
+            outFile.write(reinterpret_cast<const char*>(&record.localIndices[i]), sizeof(record.localIndices[i]));
+            outFile.write(reinterpret_cast<const char*>(&record.localValues[i]), sizeof(record.localValues[i]));
+        }
+
+        int globalSize = record.globalIndices.size();
+        outFile.write(reinterpret_cast<const char*>(&globalSize), sizeof(globalSize));
+        for (int i = 0; i < globalSize; ++i) {
+            outFile.write(reinterpret_cast<const char*>(&record.globalIndices[i]), sizeof(record.globalIndices[i]));
+            outFile.write(reinterpret_cast<const char*>(&record.globalValues[i]), sizeof(record.globalValues[i]));
+        }
+    }
+    outFile.close();
+}
+
+int main() {
+    // Example text data (replace this with the actual text data you have)
+    std::string textData = R"(
+    Detected Fortran binary file
+    === NR  1 185
+    -g- meas.  1 73 1 1 -0.00794364139438 0.00200000009499
+    local   [1]
+    local   [1.0]
+    global  [73]
+    global  [1.0]
+    -g- meas.  2 73 2 2 -0.0057476432994 0.00200000009499
+    local   [3, 4]
+    local   [0.9961847066879272, 0.08726999908685684]
+    global  [73, 1073]
+    global  [0.9961847066879272, 0.08726999908685684]
+    -g- meas.  3 123 1 1 0.0199138838798 0.00200000009499
+    local   [5]
+    local   [1.0]
+    global  [123]
+    global  [1.0]
+    -g- meas.  4 173 1 1 -0.00603289855644 0.00200000009499
+    local   [7]
+    local   [1.0]
+    global  [173]
+    global  [1.0]
+    -g- meas.  5 223 1 1 0.00447255838662 0.00200000009499
+    local   [9]
+    local   [1.0]
+    global  [223]
+    global  [1.0]
+    -g- meas.  6 223 2 2 0.00266737677157 0.00200000009499
+    local   [11, 12]
+    local   [0.9961847066879272, -0.08726999908685684]
+    global  [223, 1223]
+    global  [0.9961847066879272, -0.08726999908685684]
+    -g- meas.  7 284 1 1 0.0104082413018 0.00200000009499
+    local   [13]
+    local   [1.0]
+    global  [284]
+    global  [1.0]
+    -g- meas.  8 334 1 1 -0.0158891454339 0.00200000009499
+    local   [15]
+    local   [1.0]
+    global  [334]
+    global  [1.0]
+    -g- meas.  9 384 1 1 -0.0130353039131 0.00200000009499
+    local   [17]
+    local   [1.0]
+    global  [384]
+    global  [1.0]
+    -g- meas.  10 384 2 2 -0.00735388789326 0.00200000009499
+    local   [19, 20]
+    local   [0.9961847066879272, 0.08726999908685684]
+    global  [384, 1384]
+    global  [0.9961847066879272, 0.08726999908685684]
+    -g- meas.  11 434 1 1 -0.0190641265363 0.00200000009499
+    local   [21]
+    local   [1.0]
+    global  [434]
+    global  [1.0]
+    -g- meas.  12 495 1 1 -0.00492394249886 0.00200000009499
+    local   [23]
+    local   [1.0]
+    global  [495]
+    global  [1.0]
+    -g- meas.  13 545 1 1 -0.00085114245303 0.00200000009499
+    local   [25]
+    local   [1.0]
+    global  [545]
+    global  [1.0]
+    -g- meas.  14 545 2 2 0.00113756186329 0.00200000009499
+    local   [27, 28]
+    local   [0.9961847066879272, -0.08726999908685684]
+    global  [545, 1545]
+    global  [0.9961847066879272, -0.08726999908685684]
+    -l- meas.  15 1 3 0 0.0 3.5326469515e-05
+    local   [1, 3, 5]
+    local   [2.0, -2.1052632331848145, 0.10526315867900848]
+    -l- meas.  16 2 3 0 0.0 3.5326469515e-05
+    local   [2, 4, 6]
+    local   [2.0, -2.1052632331848145, 0.10526315867900848]
+    -l- meas.  17 3 3 0 0.0 3.5326469515e-05
+    local   [3, 5, 7]
+    local   [0.10526315867900848, -0.2052631676197052, 0.10000000149011612]
+    -l- meas.  18 4 3 0 0.0 3.5326469515e-05
+    local   [4, 6, 8]
+    local   [0.10526315867900848, -0.2052631676197052, 0.10000000149011612]
+    -l- meas.  19 5 3 0 0.0 3.5326469515e-05
+    local   [5, 7, 9]
+    local   [0.10000000149011612, -0.20000000298023224, 0.10000000149011612]
+    -l- meas.  20 6 3 0 0.0 3.5326469515e-05
+    local   [6, 8, 10]
+    local   [0.10000000149011612, -0.20000000298023224, 0.10000000149011612]
+    -l- meas.  21 7 3 0 0.0 3.5326469515e-05
+    local   [7, 9, 11]
+    local   [0.10000000149011612, -2.0999999046325684, 2.0]
+    -l- meas.  22 8 3 0 0.0 3.5326469515e-05
+    local   [8, 10, 12]
+    local   [0.10000000149011612, -2.0999999046325684, 2.0]
+    -l- meas.  23 9 3 0 0.0 3.5326469515e-05
+    local   [9, 11, 13]
+    local   [2.0, -2.1052632331848145, 0.10526315867900848]
+    -l- meas.  24 10 3 0 0.0 3.5326469515e-05
+    local   [10, 12, 14]
+    local   [2.0, -2.1052632331848145, 0.10526315867900848]
+    -l- meas.  25 11 3 0 0.0 3.5326469515e-05
+    local   [11, 13, 15]
+    local   [0.10526315867900848, -0.2052631676197052, 0.10000000149011612]
+    -l- meas.  26 12 3 0 0.0 3.5326469515e-05
+    local   [12, 14, 16]
+    local   [0.10526315867900848, -0.2052631676197052, 0.10000000149011612]
+    -l- meas.  27 13 3 0 0.0 3.5326469515e-05
+    local   [13, 15, 17]
+    local   [0.10000000149011612, -0.20000000298023224, 0.10000000149011612]
+    -l- meas.  28 14 3 0 0.0 3.5326469515e-05
+    local   [14, 16, 18]
+    local   [0.10000000149011612, -0.20000000298023224, 0.10000000149011612]
+    -l- meas.  29 15 3 0 0.0 3.5326469515e-05
+    local   [15, 17, 19]
+    local   [0.10000000149011612, -2.0999999046325684, 2.0]
+    -l- meas.  30 16 3 0 0.0 3.5326469515e-05
+    local   [16, 18, 20]
+    local   [0.10000000149011612, -2.0999999046325684, 2.0]
+    -l- meas.  31 17 3 0 0.0 3.5326469515e-05
+    local   [17, 19, 21]
+    local   [2.0, -2.1052632331848145, 0.10526315867900848]
+    -l- meas.  32 18 3 0 0.0 3.5326469515e-05
+    local   [18, 20, 22]
+    local   [2.0, -2.1052632331848145, 0.10526315867900848]
+    -l- meas.  33 19 3 0 0.0 3.5326469515e-05
+    local   [19, 21, 23]
+    local   [0.10526315867900848, -0.2052631676197052, 0.10000000149011612]
+    -l- meas.  34 20 3 0 0.0 3.5326469515e-05
+    local   [20, 22, 24]
+    local   [0.10526315867900848, -0.2052631676197052, 0.10000000149011612]
+    -l- meas.  35 21 3 0 0.0 3.5326469515e-05
+    local   [21, 23, 25]
+    local   [0.10000000149011612, -0.20000000298023224, 0.10000000149011612]
+    -l- meas.  36 22 3 0 0.0 3.5326469515e-05
+    local   [22, 24, 26]
+    local   [0.10000000149011612, -0.20000000298023224, 0.10000000149011612]
+    -l- meas.  37 23 3 0 0.0 3.5326469515e-05
+    local   [23, 25, 27]
+    local   [0.10000000149011612, -2.0999999046325684, 2.0]
+    -l- meas.  38 24 3 0 0.0 3.5326469515e-05
+    local   [24, 26, 28]
+    local   [0.10000000149011612, -2.0999999046325684, 2.0]
+    === NR  2 185
+    -g- meas.  1 56 1 1 -0.000892618438229 0.00200000009499
+    local   [1]
+    local   [1.0]
+    global  [56]
+    global  [1.0]
+    -g- meas.  2 56 2 2 0.000528747797944 0.00200000009499
+    local   [3, 4]
+    local   [0.9961847066879272, 0.08726999908685684]
+    global  [56, 1056]
+    global  [0.9961847066879272, 0.08726999908685684]
+    -g- meas.  3 105 1 1 0.00135183241218 0.002000
+}

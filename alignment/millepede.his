@@ -1,0 +1,36 @@
+ 
+Histogram    1          version    0          type 2
+Number of words/record in binary file                       
+           bins, limits  120     0.0000         6.0000    
+          out-low inside out-high          0         1         0
+bincontent
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0
+minmax  0.1600000E+02  0.1600000E+02
+end of histogram
+ 
+Histogram    8          version    0          type 1
+not_stored data per record                                  
+           bins, limits  120     0.0000         60.000    
+          out-low inside out-high          0         0         0
+bincontent
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0
+minmax  0.0000000E+00  0.0000000E+00
+end of histogram
+ 
+Histogram    2          version    0          type 2
+Number of entries per label                                 
+           bins, limits  120     0.0000         6.0000    
+          out-low inside out-high          4         0         0
+bincontent
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0
+minmax  0.0000000E+00  0.0000000E+00
+end of histogram
