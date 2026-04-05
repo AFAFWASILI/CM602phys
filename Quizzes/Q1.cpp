@@ -1,24 +1,25 @@
+[awasili@lxplus805 Quiz]$ cat Q1.cpp
 #include <iostream>
-#include <vector>
 using namespace std;
 
-void momentumAnalysis() {
+void CPViolationCheck() {
 
-    // (a) Define a vector with the following momentum values:
-    // 1.5, -0.3, 0.8, 2.2, 0.0
-    // store them using push_back()
-
-
-
-    // (b) Print all momentum values using a for loop
+    // (a) Define the number of observed decays:
+    // Bplus = 120
+    // Bminus = 100
 
 
 
-    // (c) Using a for loop:
-    // if momentum < 0, skip it using continue
-    // if momentum == 0, stop the loop using break
-    // otherwise:
-    //   print "Accepted track" if momentum >= 1.0
-    //   print "Rejected track" if momentum < 1.0
+    // (b) Calculate the CP asymmetry:
+    // A_CP = (Bplus - Bminus) / (Bplus + Bminus)
 
+
+
+    // (c) Print the CP asymmetry
+
+
+
+    // (d) Using if / else:
+    // print "CP violation observed" if |A_CP| > 0.05
+    // otherwise print "No significant CP violation"
 }
